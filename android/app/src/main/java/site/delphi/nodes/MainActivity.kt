@@ -30,8 +30,10 @@ class MainActivity : Activity() {
             RefreshWorker.runNow(this)
             findViewById<TextView>(R.id.cards).postDelayed({ showCards() }, 4000)
         }
+        // the card's own page on delphi.site (live status, hash rate, points); the web node itself isn't needed here
         findViewById<Button>(R.id.open_site).setOnClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("${StatusRepo.SITE}/node")))
+            val card = NodeStore.approval(this)?.tokenId
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(if (card != null) "${StatusRepo.SITE}/node/$card" else StatusRepo.SITE)))
         }
         findViewById<Button>(R.id.node_link).setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(NodeStore.linkUrl(this, NodeStore.approval(this)?.tokenId))))
@@ -72,6 +74,7 @@ class MainActivity : Activity() {
         Toast.makeText(this, problem ?: "Linked. Tap Start node.", Toast.LENGTH_LONG).show()
         if (problem == null) findViewById<EditText>(R.id.node_code).setText("")
         showNode()
+        RefreshWorker.runNow(this)
     }
 
     override fun onResume() {

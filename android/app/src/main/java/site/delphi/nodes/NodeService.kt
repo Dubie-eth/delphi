@@ -165,13 +165,18 @@ class NodeService : Service() {
         val sig = Eth.signPersonal(key, Protocol.liveMessage(approval.tokenId, approval.wallet, on, ts, rate100))
         val body = JSONObject().put("wallet", approval.wallet).put("running", on).put("ts", ts).put("rate100", rate100)
             .put("sig", sig).put("sessionKey", Eth.address(key)).put("sessionExpires", approval.expires).put("sessionSig", approval.sig)
+        val before = liveShown
         problem = try {
             val (code, j) = Net.post("${StatusRepo.SITE}/api/cards/${approval.tokenId}/live", body)
             if (code in 200..299) null else "card status not updated: ${j.optString("error", "HTTP $code")}"
         } catch (e: Exception) {
             "no connection"
         }
+        // the card just turned green (or red on stop): redraw the widget now instead of waiting for its next refresh
+        liveShown = problem == null && on
+        if (liveShown != before || !on) RefreshWorker.runNow(this)
     }
+    @Volatile private var liveShown = false
 
     private fun batteryBlocked(): Boolean {
         val b = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)) ?: return false
@@ -203,7 +208,8 @@ class NodeService : Service() {
     private fun summary(): String {
         val card = if (::approval.isInitialized) "Card #${approval.tokenId}" else "Delphi node"
         val rate = if (rateNow > 0) " · ${if (rateNow >= 10) rateNow.toLong() else "%.1f".format(rateNow)} checks/s" else ""
-        return "$card running$rate\nTotal ${checks.get()} checks · $lastBatch" + (problem?.let { "\n$it" } ?: "")
+        val shown = if (problem == null && liveShown) "\nCard shows Running on delphi.site and your widget" else ""
+        return "$card running$rate\nTotal ${checks.get()} checks · $lastBatch$shown" + (problem?.let { "\n$it" } ?: "")
     }
 
     private fun refreshNotification() {

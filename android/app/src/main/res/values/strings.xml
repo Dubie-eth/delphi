@@ -12,7 +12,7 @@
     <string name="main_howto">Add a widget: long-press an empty spot on your home screen → Widgets → Delphi Nodes → drag \"Delphi Node\" onto the screen, then enter the card number. Add one widget per card.\n\nColors: green running · red not running or not staked · yellow being slashed · gray cooling down. Widgets refresh about once a minute while your screen is on; tap one to open its card.</string>
     <string name="no_widgets">No widgets yet.</string>
     <string name="refresh">Refresh now</string>
-    <string name="open_site">Open Phone Node</string>
+    <string name="open_site">Open my card\'s page</string>
     <string name="node_title">Phone node</string>
     <string name="widgets_title">Home-screen widgets</string>
     <string name="node_start">Start node</string>
