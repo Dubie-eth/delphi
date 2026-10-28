@@ -1,11 +1,13 @@
 name: android widget app
 # Builds android/ (Delphi Nodes: home-screen widgets showing each Genesis Node card's live status) and publishes the APK
 # to the "android-latest" release, so it can be downloaded on a phone and installed over the previous build.
-# Runs only on pushes to main and manual runs (never on outside pull requests), so the signing key in the Actions cache
-# is only ever used by this repo's own builds.
+# Pushes to main and manual runs build, sign and publish. Pull requests only run the tests and a debug-signed build:
+# they never touch the signing key in the Actions cache (fork PRs can read the base branch's caches) and never publish.
 on:
   push:
     branches: [main]
+    paths: ["android/**", ".github/workflows/android.yml"]
+  pull_request:
     paths: ["android/**", ".github/workflows/android.yml"]
   workflow_dispatch: {}
 permissions:
@@ -28,14 +30,17 @@ jobs:
           gradle-version: "8.11.1"
       # One signing key for every build (so updates install over each other), created on the first run and kept in the
       # repo's Actions cache, which only this repo's workflows can read. Never printed, never committed.
+      - name: Core tests (Freivalds, signing, message formats vs delphi.site/viem vectors)
+        run: gradle -p android :nodecore:test --no-daemon
       - name: Restore signing key
+        if: github.event_name != 'pull_request'
         id: key
         uses: actions/cache@v4
         with:
           path: ~/.delphi-signing
           key: delphi-nodes-signing-v1
       - name: Create signing key (first build only)
-        if: steps.key.outputs.cache-hit != 'true'
+        if: github.event_name != 'pull_request' && steps.key.outputs.cache-hit != 'true'
         run: |
           mkdir -p ~/.delphi-signing && chmod 700 ~/.delphi-signing
           openssl rand -hex 24 > ~/.delphi-signing/password
@@ -44,8 +49,10 @@ jobs:
             -storepass "$(cat ~/.delphi-signing/password)" -keypass "$(cat ~/.delphi-signing/password)" >/dev/null 2>&1
       - name: Build APK
         run: |
-          export DELPHI_KEYSTORE=$HOME/.delphi-signing/delphi-nodes.keystore
-          export DELPHI_KEYSTORE_PASSWORD="$(cat ~/.delphi-signing/password)"
+          if [ -f ~/.delphi-signing/delphi-nodes.keystore ]; then
+            export DELPHI_KEYSTORE=$HOME/.delphi-signing/delphi-nodes.keystore
+            export DELPHI_KEYSTORE_PASSWORD="$(cat ~/.delphi-signing/password)"
+          fi
           gradle -p android :app:assembleRelease --no-daemon --stacktrace
           cp android/app/build/outputs/apk/release/app-release.apk delphi-nodes.apk
       - uses: actions/upload-artifact@v4
@@ -53,6 +60,7 @@ jobs:
           name: delphi-nodes-apk
           path: delphi-nodes.apk
       - name: Publish to the android-latest release
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

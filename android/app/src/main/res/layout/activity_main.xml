@@ -32,6 +32,77 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:fontFamily="serif"
+            android:text="@string/node_title"
+            android:textColor="@color/gold"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/node_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/widget_bg"
+            android:lineSpacingMultiplier="1.2"
+            android:padding="16dp"
+            android:textColor="@color/text"
+            android:textSize="15sp" />
+
+        <Button
+            android:id="@+id/node_toggle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/node_start" />
+
+        <Button
+            android:id="@+id/node_link"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/node_link" />
+
+        <EditText
+            android:id="@+id/node_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/node_code_hint"
+            android:importantForAutofill="no"
+            android:inputType="textNoSuggestions"
+            android:maxLines="3"
+            android:textColor="@color/text"
+            android:textColorHint="#80E8E1CF"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/node_code_use"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/node_code_use" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:lineSpacingMultiplier="1.2"
+            android:text="@string/node_howto"
+            android:textColor="#B3E8E1CF"
+            android:textSize="13sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:fontFamily="serif"
+            android:text="@string/widgets_title"
+            android:textColor="@color/gold"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:lineSpacingMultiplier="1.2"
             android:text="@string/main_howto"

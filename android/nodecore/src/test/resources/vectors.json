@@ -1,0 +1,52 @@
+{
+ "prng": [
+  0.9797282677609473,
+  0.3067522644996643,
+  0.484205421525985,
+  0.817934412509203,
+  0.5094283693470061,
+  0.34747186047025025
+ ],
+ "blockHash": "0x9f1d2c3b4a5968778695a4b3c2d1e0f00112233445566778899aabbccddeeff0",
+ "wallet": "0x15719D37d81A0A490AF6B143FFB3c84613d77a7b",
+ "seed": 3240842826,
+ "hashes": {
+  "64": "ab422f2d",
+  "512": "dd44286f",
+  "1024": "83cb744b"
+ },
+ "faultChecks": [
+  false,
+  true,
+  true,
+  true,
+  true,
+  true,
+  false,
+  true
+ ],
+ "honestChecks": [
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true,
+  true
+ ],
+ "pk": "0x4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318",
+ "address": "0x2c7536E3605D9C16a7a3D7b1898e529396a65c23",
+ "msgs": {
+  "batch": "delphi-node:v2:46630:1:dd44286f:18517:600:1793206372:137000123:512",
+  "session": "delphi-node-session:v1:46630:1:0x2c7536e3605d9c16a7a3d7b1898e529396a65c23:1793800000",
+  "live": "delphi-node-live:v1:46630:1:0x15719d37d81a0a490af6b143ffb3c84613d77a7b:1:1793206372:29143",
+  "unicode": "héllo ✓"
+ },
+ "sigs": {
+  "batch": "0x452a2b4f002ef54060e87a43743f853d304eaf47163e7dc2307d55aff4b27eb30074cfa2da4ade874c4211217e6c3f1e8221c6ebf4dbcee4903377cd88c2ca0c1c",
+  "session": "0x478acf1829dca586e411473468a2711c7b1563238180586177c140ccb0c8c61a2c839d49e572e6fa45434700cbfda604c655bd85c69ab6e154b52620521dba031b",
+  "live": "0x736153b36ba5f99f070bd75b14b7fb7b46d45739ef608fc008f958835a3445ad46c422c5ccbc3fbb5bdcebb51639164ff5b3afad578f75481004ec0d9ef1eb7c1c",
+  "unicode": "0xf6af7df4424f96c1e866018ad16f64cae105d0675377c3fb14acca14c89e87ab3073a4b410f6dcee4870b4eff27aa78682cfeca3e8f205bd13a22304ee7d9dd61b"
+ }
+}

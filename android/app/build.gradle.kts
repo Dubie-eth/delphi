@@ -40,6 +40,14 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
+    packaging {
+        resources.excludes += setOf("META-INF/versions/9/OSGI-INF/MANIFEST.MF", "META-INF/BCKEY.DSA", "META-INF/BCKEY.SF")
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -51,4 +59,5 @@ android {
 
 dependencies {
     implementation("androidx.work:work-runtime-ktx:2.10.0")
+    implementation(project(":nodecore"))
 }
