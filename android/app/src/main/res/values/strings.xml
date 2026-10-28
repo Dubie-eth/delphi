@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Delphi Nodes</string>
+    <string name="widget_label">Delphi Node</string>
+    <string name="widget_description">A Genesis Node card\'s live status: green running, red not running, yellow being slashed, gray cooling down.</string>
+    <string name="config_title">Which card?</string>
+    <string name="config_prompt">Which Genesis Node card should this widget show?</string>
+    <string name="config_save">Show this card</string>
+    <string name="bad_card">Enter a card number from 1 to 2500</string>
+    <string name="checking">Checking…</string>
+    <string name="main_title">Delphi Nodes</string>
+    <string name="main_howto">Add a widget: long-press an empty spot on your home screen → Widgets → Delphi Nodes → drag \"Delphi Node\" onto the screen, then enter the card number. Add one widget per card.\n\nColors: green running · red not running or not staked · yellow being slashed · gray cooling down. Widgets refresh about every 15 minutes; tap one to open its card.</string>
+    <string name="no_widgets">No widgets yet.</string>
+    <string name="refresh">Refresh now</string>
+    <string name="open_site">Open Phone Node</string>
+</resources>

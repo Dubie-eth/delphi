@@ -1,0 +1,66 @@
+name: android widget app
+# Builds android/ (Delphi Nodes: home-screen widgets showing each Genesis Node card's live status) and publishes the APK
+# to the "android-latest" release, so it can be downloaded on a phone and installed over the previous build.
+# Runs only on pushes to main and manual runs (never on outside pull requests), so the signing key in the Actions cache
+# is only ever used by this repo's own builds.
+on:
+  push:
+    branches: [main]
+    paths: ["android/**", ".github/workflows/android.yml"]
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: android-build
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.11.1"
+      # One signing key for every build (so updates install over each other), created on the first run and kept in the
+      # repo's Actions cache, which only this repo's workflows can read. Never printed, never committed.
+      - name: Restore signing key
+        id: key
+        uses: actions/cache@v4
+        with:
+          path: ~/.delphi-signing
+          key: delphi-nodes-signing-v1
+      - name: Create signing key (first build only)
+        if: steps.key.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/.delphi-signing && chmod 700 ~/.delphi-signing
+          openssl rand -hex 24 > ~/.delphi-signing/password
+          keytool -genkeypair -keystore ~/.delphi-signing/delphi-nodes.keystore -alias delphi-nodes -keyalg RSA -keysize 2048 \
+            -validity 10000 -dname "CN=Delphi Nodes, O=Delphi" \
+            -storepass "$(cat ~/.delphi-signing/password)" -keypass "$(cat ~/.delphi-signing/password)" >/dev/null 2>&1
+      - name: Build APK
+        run: |
+          export DELPHI_KEYSTORE=$HOME/.delphi-signing/delphi-nodes.keystore
+          export DELPHI_KEYSTORE_PASSWORD="$(cat ~/.delphi-signing/password)"
+          gradle -p android :app:assembleRelease --no-daemon --stacktrace
+          cp android/app/build/outputs/apk/release/app-release.apk delphi-nodes.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: delphi-nodes-apk
+          path: delphi-nodes.apk
+      - name: Publish to the android-latest release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view android-latest >/dev/null 2>&1 || \
+            gh release create android-latest --title "Delphi Nodes (Android)" --prerelease --notes "first build"
+          gh release upload android-latest delphi-nodes.apk --clobber
+          gh release edit android-latest --notes "Build ${{ github.run_number }} ($(date -u +%F)) from ${{ github.sha }}.
+
+          On your Android phone: download delphi-nodes.apk, open it, allow installs from your browser if asked, Install.
+          Then long-press your home screen → Widgets → Delphi Nodes → drag 'Delphi Node' out → enter a card number.
+          New builds install over the old one."

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Delphi oracle silhouette (same shape as delphi.site/card). Drawn white; the widget tints it with the status color.
+     The face is a hole (evenOdd), so the tint never fills it. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="120dp"
+    android:viewportWidth="200"
+    android:viewportHeight="240">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M100,18 C68,18 52,46 52,77 C52,102 63,120 79,130 L121,130 C137,120 148,102 148,77 C148,46 132,18 100,18 Z M79,84 A21,27 0 1,0 121,84 A21,27 0 1,0 79,84 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M79,124 C54,134 37,162 33,232 L167,232 C163,162 146,134 121,124 C113,131 87,131 79,124 Z" />
+</vector>

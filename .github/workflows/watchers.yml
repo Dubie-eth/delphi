@@ -1,0 +1,23 @@
+name: delphi watchers
+# Every 10 minutes:
+#  - /api/alerts/watchdog: if the Delphi box has stopped reporting for 20 min, delphi.site sends one push alert
+#    (and one "reporting again" when it's back).
+#  - /api/cards/watch: notifies each card's followers when that card's status changes (running / not running /
+#    being slashed / cooling down).
+# Both endpoints are public and idempotent; this job only pings them. No secrets.
+# Note: GitHub pauses scheduled workflows in a repo with no activity for 60 days; re-enable it under Actions if so.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+permissions: {}
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Box watchdog
+        run: curl -fsS --max-time 30 -A delphi-watchers https://www.delphi.site/api/alerts/watchdog
+      - name: Card status changes
+        if: always()
+        run: curl -fsS --max-time 90 -A delphi-watchers https://www.delphi.site/api/cards/watch
