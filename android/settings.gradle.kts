@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "DelphiNodes"
-include(":app")
+include(":app", ":nodecore")

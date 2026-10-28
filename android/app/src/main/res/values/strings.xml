@@ -9,8 +9,17 @@
     <string name="bad_card">Enter a card number from 1 to 2500</string>
     <string name="checking">Checking…</string>
     <string name="main_title">Delphi Nodes</string>
-    <string name="main_howto">Add a widget: long-press an empty spot on your home screen → Widgets → Delphi Nodes → drag \"Delphi Node\" onto the screen, then enter the card number. Add one widget per card.\n\nColors: green running · red not running or not staked · yellow being slashed · gray cooling down. Widgets refresh about every 15 minutes; tap one to open its card.</string>
+    <string name="main_howto">Add a widget: long-press an empty spot on your home screen → Widgets → Delphi Nodes → drag \"Delphi Node\" onto the screen, then enter the card number. Add one widget per card.\n\nColors: green running · red not running or not staked · yellow being slashed · gray cooling down. Widgets refresh about once a minute while your screen is on; tap one to open its card.</string>
     <string name="no_widgets">No widgets yet.</string>
     <string name="refresh">Refresh now</string>
     <string name="open_site">Open Phone Node</string>
+    <string name="node_title">Phone node</string>
+    <string name="widgets_title">Home-screen widgets</string>
+    <string name="node_start">Start node</string>
+    <string name="node_stop">Stop node</string>
+    <string name="node_link">Link your wallet</string>
+    <string name="node_relink">Link again (new card or renew)</string>
+    <string name="node_code_hint">…or paste the approval code from delphi.site</string>
+    <string name="node_code_use">Use code</string>
+    <string name="node_howto">Runs your card\'s node in the background, even with the screen off, and keeps the widget green. Your wallet approves this phone once, for one card, for 7 days; the approval can only sign that card\'s node reports. Pauses below 30 % battery unless charging. Keep battery use "Unrestricted" for this app.</string>
 </resources>
