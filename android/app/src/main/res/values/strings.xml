@@ -19,6 +19,7 @@
     <string name="node_stop">Stop node</string>
     <string name="node_link">Link your wallet</string>
     <string name="node_relink">Link again (new card or renew)</string>
+    <string name="node_copy_link">Copy link for your wallet\'s browser</string>
     <string name="node_code_hint">…or paste the approval code from delphi.site</string>
     <string name="node_code_use">Use code</string>
     <string name="node_howto">Runs your card\'s node in the background, even with the screen off, and keeps the widget green. Your wallet approves this phone once, for one card, for 7 days; the approval can only sign that card\'s node reports. Pauses below 30 % battery unless charging. Keep battery use "Unrestricted" for this app.</string>

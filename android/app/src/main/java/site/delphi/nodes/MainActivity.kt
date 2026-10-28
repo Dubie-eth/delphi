@@ -2,6 +2,8 @@ package site.delphi.nodes
 
 import android.Manifest
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -33,6 +35,11 @@ class MainActivity : Activity() {
         }
         findViewById<Button>(R.id.node_link).setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(NodeStore.linkUrl(this, NodeStore.approval(this)?.tokenId))))
+        }
+        findViewById<Button>(R.id.node_copy_link).setOnClickListener {
+            val url = NodeStore.linkUrl(this, NodeStore.approval(this)?.tokenId)
+            (getSystemService(CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText("Delphi link", url))
+            Toast.makeText(this, "Link copied. Paste it in your wallet app's browser, approve, then come back.", Toast.LENGTH_LONG).show()
         }
         findViewById<Button>(R.id.node_code_use).setOnClickListener {
             useCode(findViewById<EditText>(R.id.node_code).text.toString())
