@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:fitsSystemWindows="true"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <ImageView
+        android:layout_width="96dp"
+        android:layout_height="115dp"
+        android:layout_marginTop="32dp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/silhouette"
+        android:tint="@color/gold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:text="@string/config_prompt"
+        android:textColor="@color/text"
+        android:textSize="17sp" />
+
+    <EditText
+        android:id="@+id/card_input"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:hint="1"
+        android:importantForAutofill="no"
+        android:inputType="number"
+        android:maxLength="4"
+        android:text="1"
+        android:textColor="@color/gold"
+        android:textColorHint="#806B6250"
+        android:textSize="32sp" />
+
+    <Button
+        android:id="@+id/save"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/config_save" />
+</LinearLayout>

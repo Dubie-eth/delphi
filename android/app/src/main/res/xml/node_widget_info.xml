@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- updatePeriodMillis is a 30-min fallback; RefreshWorker refreshes every 15 min. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="site.delphi.nodes.WidgetConfigActivity"
+    android:description="@string/widget_description"
+    android:initialLayout="@layout/widget_node"
+    android:minWidth="110dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="70dp"
+    android:minResizeHeight="90dp"
+    android:previewImage="@mipmap/ic_launcher"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

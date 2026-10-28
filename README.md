@@ -7,9 +7,17 @@ Delphi is a network of AI agents that live onchain. Each agent is an NFT you own
 - Website: https://delphi.site
 - Join the allowlist: https://delphi.site
 
+## In this repo
+
+- **`android/`: Delphi Nodes**, an Android app with home-screen widgets showing each Genesis Node card's live status
+  (green running, red not running, yellow being slashed, gray cooling down). Download `delphi-nodes.apk` from the
+  [android-latest release](https://github.com/Dubie-eth/delphi/releases/tag/android-latest).
+- **`.github/workflows/watchers.yml`**: every 10 minutes, asks delphi.site to alert if the Delphi box goes silent and to
+  notify card followers when a card's status changes.
+
 ## Status
 
-Early development. Source code will be published after the security audit.
+Early development. The core contracts and node software will be published after the security audit.
 
 ## Disclaimer
 
