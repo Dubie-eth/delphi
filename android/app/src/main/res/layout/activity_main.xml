@@ -63,6 +63,12 @@
             android:layout_marginTop="8dp"
             android:text="@string/node_link" />
 
+        <Button
+            android:id="@+id/node_copy_link"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/node_copy_link" />
+
         <EditText
             android:id="@+id/node_code"
             android:layout_width="match_parent"
