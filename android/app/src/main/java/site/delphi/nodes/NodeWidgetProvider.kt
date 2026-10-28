@@ -16,15 +16,22 @@ class NodeWidgetProvider : AppWidgetProvider() {
         ids.forEach { render(ctx, mgr, it) }
         RefreshWorker.schedule(ctx)
         RefreshWorker.runNow(ctx)
+        LiveTicker.schedule(ctx)
     }
 
     override fun onDeleted(ctx: Context, ids: IntArray) {
         ids.forEach { StatusRepo.removeWidget(ctx, it) }
     }
 
-    override fun onEnabled(ctx: Context) = RefreshWorker.schedule(ctx)
+    override fun onEnabled(ctx: Context) {
+        RefreshWorker.schedule(ctx)
+        LiveTicker.schedule(ctx)
+    }
 
-    override fun onDisabled(ctx: Context) = RefreshWorker.cancel(ctx)
+    override fun onDisabled(ctx: Context) {
+        RefreshWorker.cancel(ctx)
+        LiveTicker.cancel(ctx)
+    }
 
     companion object {
         fun widgetIds(ctx: Context): IntArray =

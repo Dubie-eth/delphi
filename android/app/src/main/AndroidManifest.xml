@@ -39,5 +39,8 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/node_widget_info" />
         </receiver>
+        <receiver
+            android:name=".LiveTicker"
+            android:exported="false" />
     </application>
 </manifest>

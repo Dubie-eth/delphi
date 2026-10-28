@@ -14,8 +14,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
-/** Fetches the status of every card shown in a widget, then redraws the widgets. Runs every 15 minutes
- *  (Android's minimum for background work) and right away when a widget is added or "Refresh" is tapped. */
+/** Fetches the status of every card shown in a widget, then redraws the widgets. Runs about every minute while the
+ *  phone is awake (LiveTicker), every 15 minutes as a backstop, and right away when a widget is added or "Refresh"
+ *  is tapped. */
 class RefreshWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
@@ -30,6 +31,7 @@ class RefreshWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ct
             }
         }
         NodeWidgetProvider.renderAll(ctx)
+        if (cards.isNotEmpty()) LiveTicker.schedule(ctx) // keeps the 1-min chain alive, and restarts it after reboot/update
         if (failed && runAttemptCount < 3) Result.retry() else Result.success()
     }
 
