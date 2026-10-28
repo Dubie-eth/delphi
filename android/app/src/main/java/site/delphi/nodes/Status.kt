@@ -7,7 +7,18 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /** One card's status, as served by delphi.site/api/cards/<id>/status (same source as the website's card app). */
-data class NodeStatus(val card: Int, val state: String, val label: String, val checkedAt: Long) {
+data class NodeStatus(
+    val card: Int, val state: String, val label: String, val checkedAt: Long,
+    /** staking wallet's points (-1 = unknown) and the node's live checks/s (-1 = not running live) */
+    val points: Long = -1, val rate: Double = -1.0,
+) {
+    /** e.g. "359 c/s · 104,233 pts"; "" when there's nothing to show */
+    val statsLine: String
+        get() = listOfNotNull(
+            if (rate >= 0) "${if (rate >= 10) rate.toLong().toString() else String.format(java.util.Locale.US, "%.1f", rate)} c/s" else null,
+            if (points >= 0) "${String.format(java.util.Locale.US, "%,d", points)} pts" else null,
+        ).joinToString(" · ")
+
     /** Colors match the website: green running, red not running/not staked, yellow being slashed, gray cooling. */
     val color: Int
         get() = when (state) {
@@ -27,9 +38,22 @@ object StatusRepo {
 
     fun prefs(ctx: Context) = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
-    /** Network call; run off the main thread. */
-    fun fetch(card: Int): NodeStatus {
-        val conn = URL("$SITE/api/cards/$card/status").openConnection() as HttpURLConnection
+    /** Network call; run off the main thread. Status + points + live rate; falls back to plain status if stats fail. */
+    fun fetch(card: Int): NodeStatus =
+        try {
+            val j = get("$SITE/api/cards/$card/stats")
+            NodeStatus(
+                card, j.getString("state"), j.getString("label"), System.currentTimeMillis(),
+                points = j.optLong("points", -1),
+                rate = if (j.isNull("rateLive")) -1.0 else j.optDouble("rateLive", -1.0),
+            )
+        } catch (e: Exception) {
+            val j = get("$SITE/api/cards/$card/status")
+            NodeStatus(card, j.getString("state"), j.getString("label"), System.currentTimeMillis())
+        }
+
+    private fun get(url: String): JSONObject {
+        val conn = URL(url).openConnection() as HttpURLConnection
         conn.connectTimeout = 15_000
         conn.readTimeout = 15_000
         conn.setRequestProperty("User-Agent", "DelphiNodes-Android/1")
@@ -38,8 +62,7 @@ object StatusRepo {
             val code = conn.responseCode
             val body = (if (code in 200..299) conn.inputStream else conn.errorStream)?.bufferedReader()?.use { it.readText() } ?: ""
             if (code !in 200..299) throw IllegalStateException("HTTP $code")
-            val j = JSONObject(body)
-            return NodeStatus(card, j.getString("state"), j.getString("label"), System.currentTimeMillis())
+            return JSONObject(body)
         } finally {
             conn.disconnect()
         }
@@ -50,6 +73,8 @@ object StatusRepo {
             .putString("card_${s.card}_state", s.state)
             .putString("card_${s.card}_label", s.label)
             .putLong("card_${s.card}_at", s.checkedAt)
+            .putLong("card_${s.card}_points", s.points)
+            .putFloat("card_${s.card}_rate", s.rate.toFloat())
             .apply()
     }
 
@@ -58,7 +83,10 @@ object StatusRepo {
         val p = prefs(ctx)
         val at = p.getLong("card_${card}_at", 0L)
         if (at == 0L) return NodeStatus(card, "unknown", "Checking…", 0L)
-        val s = NodeStatus(card, p.getString("card_${card}_state", "unknown")!!, p.getString("card_${card}_label", "")!!, at)
+        val s = NodeStatus(
+            card, p.getString("card_${card}_state", "unknown")!!, p.getString("card_${card}_label", "")!!, at,
+            points = p.getLong("card_${card}_points", -1), rate = p.getFloat("card_${card}_rate", -1f).toDouble(),
+        )
         return if (System.currentTimeMillis() - at > STALE_MS) s.copy(state = "unknown", label = "No signal") else s
     }
 

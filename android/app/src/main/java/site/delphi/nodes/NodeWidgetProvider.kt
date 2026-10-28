@@ -56,6 +56,9 @@ class NodeWidgetProvider : AppWidgetProvider() {
                 views.setTextColor(R.id.status_label, s.color)
                 views.setInt(R.id.silhouette, "setColorFilter", s.color)
                 views.setContentDescription(R.id.silhouette, "Node $card: ${s.label}")
+                val line = if (s.state == "unknown") "" else s.statsLine
+                views.setTextViewText(R.id.stats_line, line)
+                views.setViewVisibility(R.id.stats_line, if (line.isEmpty()) android.view.View.GONE else android.view.View.VISIBLE)
                 val open = Intent(Intent.ACTION_VIEW, Uri.parse("${StatusRepo.SITE}/card/$card"))
                 views.setOnClickPendingIntent(
                     R.id.widget_root,

@@ -37,4 +37,15 @@
         android:text="@string/checking"
         android:textColor="#9CA3AF"
         android:textSize="11sp" />
+
+    <TextView
+        android:id="@+id/stats_line"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text=""
+        android:textColor="#B8A46A"
+        android:textSize="10sp"
+        android:visibility="gone" />
 </LinearLayout>
