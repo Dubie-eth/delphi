@@ -1,0 +1,80 @@
+name: desktop node app
+# Builds desktop/ (Delphi Node, the Tauri testnet desktop node) for Windows, macOS (Apple Silicon + Intel) and Linux,
+# and publishes the installers to the "desktop-latest" release (linked from delphi.site/download).
+# desktop/ and app/ are synced from delphi.site by its scripts/sync-desktop-public.sh. Pushes to main and manual runs
+# build and publish; pull requests only build (no release is touched).
+on:
+  push:
+    branches: [main]
+    paths: ["desktop/**", "app/**", ".github/workflows/desktop.yml"]
+  pull_request:
+    paths: ["desktop/**", "app/**", ".github/workflows/desktop.yml"]
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: desktop-build-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-latest
+            args: ""
+            rust_target: ""
+          - platform: macos-latest
+            args: --target aarch64-apple-darwin
+            rust_target: aarch64-apple-darwin
+          - platform: macos-latest
+            args: --target x86_64-apple-darwin
+            rust_target: x86_64-apple-darwin
+          - platform: ubuntu-22.04
+            args: ""
+            rust_target: ""
+    runs-on: ${{ matrix.platform }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Linux deps
+        if: startsWith(matrix.platform, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev librsvg2-dev patchelf libayatana-appindicator3-dev
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri -> target
+      - name: npm ci
+        working-directory: desktop
+        run: npm ci
+      - name: Type-check
+        working-directory: desktop
+        run: npx tsc --noEmit -p .
+      - name: Build (pull request, no release)
+        if: github.event_name == 'pull_request'
+        uses: tauri-apps/tauri-action@v0
+        with:
+          projectPath: desktop
+          args: ${{ matrix.args }}
+      - name: Build and publish to desktop-latest
+        if: github.event_name != 'pull_request'
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: desktop
+          tagName: desktop-latest
+          releaseName: "Delphi Node desktop (testnet)"
+          releaseBody: "Unsigned testnet builds of the Delphi desktop node for Robinhood Chain testnet (46630). Windows: .msi or -setup.exe. macOS: .dmg (aarch64 = Apple Silicon, x64 = Intel; right-click > Open the first time). Linux: .AppImage or .deb. Download page: https://www.delphi.site/download"
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}

@@ -22,3 +22,8 @@ Early development. The core contracts and node software will be published after 
 ## Disclaimer
 
 Delphi is in early development. Joining the allowlist does not guarantee a mint or allocation and is not an offer of securities or a promise of returns. Features, timelines, and rewards may change before launch. Nothing here is financial advice. AI answers can be wrong; always do your own research.
+
+## Desktop node (`desktop/`)
+The Delphi Node desktop app (Tauri, testnet). `desktop/` and the shared `app/` files are synced from delphi.site;
+GitHub Actions (`.github/workflows/desktop.yml`) builds Windows, macOS and Linux installers into the
+[`desktop-latest`](https://github.com/Dubie-eth/delphi/releases/tag/desktop-latest) release.
