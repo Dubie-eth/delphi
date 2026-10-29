@@ -41,6 +41,7 @@ class NodeService : Service() {
         private const val NOTE_ID = 46630
         const val ACTION_STOP = "site.delphi.nodes.STOP"
         const val N = 512
+        private const val PAUSED_BATTERY = "Paused: battery under 30 % and not charging. Restarts on its own when you plug in."
 
         fun start(ctx: Context) {
             val i = Intent(ctx, NodeService::class.java)
@@ -66,6 +67,7 @@ class NodeService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
+            NodeStore.setWantRunning(this, false) // the user's Stop: no auto-restart
             shutdown("Stopped.")
             return START_NOT_STICKY
         }
@@ -79,12 +81,13 @@ class NodeService : Service() {
             return START_NOT_STICKY
         }
         if (batteryBlocked()) {
-            shutdown("Paused: battery under 30 % and not charging.")
+            shutdown(PAUSED_BATTERY)
             return START_NOT_STICKY
         }
         approval = a
         running.set(true)
         NodeStore.setRunning(this, true)
+        NodeStore.setWantRunning(this, true) // running = wanted (also covers nodes started before auto-restart existed)
         wake = (getSystemService(POWER_SERVICE) as PowerManager).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "delphi:node").apply { acquire() }
         worker = Thread({ workLoop() }, "delphi-node").apply { priority = Thread.NORM_PRIORITY - 1; start() }
         sched = Executors.newSingleThreadScheduledExecutor().apply {
@@ -149,11 +152,12 @@ class NodeService : Service() {
 
     // ---- every minute: heartbeat, battery, approval expiry, notification ----
     private fun minuteTick() {
+        NodeStore.touchAlive(this)
         val now = System.currentTimeMillis()
         val c = checks.get()
         lastBeat?.let { (pc, pt) -> if (now > pt) rateNow = (c - pc) * 1000.0 / (now - pt) }
         lastBeat = c to now
-        if (batteryBlocked()) { shutdown("Paused: battery under 30 % and not charging."); return }
+        if (batteryBlocked()) { shutdown(PAUSED_BATTERY); return }
         if (approval.expires - now / 1000 < 15 * 60) { shutdown("Approval ran out. Link your wallet again (7 days per approval)."); return }
         heartbeat(true)
         refreshNotification()
@@ -178,14 +182,7 @@ class NodeService : Service() {
     }
     @Volatile private var liveShown = false
 
-    private fun batteryBlocked(): Boolean {
-        val b = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)) ?: return false
-        val level = b.getIntExtra(BatteryManager.EXTRA_LEVEL, -1); val scale = b.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-        if (level < 0 || scale <= 0) return false
-        val st = b.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
-        val charging = st == BatteryManager.BATTERY_STATUS_CHARGING || st == BatteryManager.BATTERY_STATUS_FULL
-        return Protocol.shouldPauseForBattery(level.toDouble() / scale, charging, NodeStore.batteryOverride(this))
-    }
+    private fun batteryBlocked(): Boolean = AutoStart.batteryBlocked(this)
 
     // ---- lifecycle / notification ----
     private fun shutdown(reason: String) {

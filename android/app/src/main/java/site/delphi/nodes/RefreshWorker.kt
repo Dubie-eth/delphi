@@ -31,6 +31,7 @@ class RefreshWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ct
             }
             PfpCache.prefetch(ctx, card) // the card's PFP in every status color (no-op once cached for the day)
         }
+        runCatching { AutoStart.check(ctx) } // a paused/killed node comes back once it may (charging, back above 30 %)
         NodeWidgetProvider.renderAll(ctx)
         if (cards.isNotEmpty()) LiveTicker.schedule(ctx) // keeps the 1-min chain alive, and restarts it after reboot/update
         if (failed && runAttemptCount < 3) Result.retry() else Result.success()

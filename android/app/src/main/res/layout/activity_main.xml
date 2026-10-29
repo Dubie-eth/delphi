@@ -56,6 +56,15 @@
             android:layout_marginTop="12dp"
             android:text="@string/node_start" />
 
+        <CheckBox
+            android:id="@+id/node_autorestart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:checked="true"
+            android:text="@string/node_autorestart"
+            android:textSize="14sp" />
+
         <Button
             android:id="@+id/node_link"
             android:layout_width="match_parent"
