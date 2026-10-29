@@ -29,6 +29,7 @@ class RefreshWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ct
             } catch (e: Exception) {
                 failed = true
             }
+            PfpCache.prefetch(ctx, card) // the card's PFP in every status color (no-op once cached for the day)
         }
         NodeWidgetProvider.renderAll(ctx)
         if (cards.isNotEmpty()) LiveTicker.schedule(ctx) // keeps the 1-min chain alive, and restarts it after reboot/update

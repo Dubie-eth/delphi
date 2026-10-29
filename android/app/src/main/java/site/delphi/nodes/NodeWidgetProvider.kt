@@ -9,7 +9,8 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.RemoteViews
 
-/** Home-screen widget: one card's oracle silhouette in its live status color. Tap opens the card on delphi.site. */
+/** Home-screen widget: one card's PFP oracle (its face and role swag; the plain silhouette until that's downloaded)
+ *  in its live status color. Tap opens the card on delphi.site. */
 class NodeWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(ctx: Context, mgr: AppWidgetManager, ids: IntArray) {
@@ -49,13 +50,23 @@ class NodeWidgetProvider : AppWidgetProvider() {
                 views.setTextViewText(R.id.card_number, "Delphi")
                 views.setTextViewText(R.id.status_label, "Tap to set up")
                 views.setInt(R.id.silhouette, "setColorFilter", 0xFF6B6250.toInt())
+                views.setViewVisibility(R.id.silhouette, android.view.View.VISIBLE)
+                views.setViewVisibility(R.id.pfp, android.view.View.GONE)
             } else {
                 val s = StatusRepo.cached(ctx, card)
                 views.setTextViewText(R.id.card_number, "#$card")
                 views.setTextViewText(R.id.status_label, s.label)
                 views.setTextColor(R.id.status_label, s.color)
-                views.setInt(R.id.silhouette, "setColorFilter", s.color)
-                views.setContentDescription(R.id.silhouette, "Node $card: ${s.label}")
+                val pfp = PfpCache.bitmap(ctx, card, s.color)
+                if (pfp != null) {
+                    views.setImageViewBitmap(R.id.pfp, pfp)
+                    views.setContentDescription(R.id.pfp, "Node $card: ${s.label}")
+                } else {
+                    views.setInt(R.id.silhouette, "setColorFilter", s.color)
+                    views.setContentDescription(R.id.silhouette, "Node $card: ${s.label}")
+                }
+                views.setViewVisibility(R.id.pfp, if (pfp != null) android.view.View.VISIBLE else android.view.View.GONE)
+                views.setViewVisibility(R.id.silhouette, if (pfp != null) android.view.View.GONE else android.view.View.VISIBLE)
                 val line = if (s.state == "unknown") "" else s.statsLine
                 views.setTextViewText(R.id.stats_line, line)
                 views.setViewVisibility(R.id.stats_line, if (line.isEmpty()) android.view.View.GONE else android.view.View.VISIBLE)
