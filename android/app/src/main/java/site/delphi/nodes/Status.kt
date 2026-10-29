@@ -11,12 +11,15 @@ data class NodeStatus(
     val card: Int, val state: String, val label: String, val checkedAt: Long,
     /** staking wallet's points (-1 = unknown) and the node's live checks/s (-1 = not running live) */
     val points: Long = -1, val rate: Double = -1.0,
+    /** verified work batches credited on-chain to this card (-1 = unknown) */
+    val jobs: Long = -1,
 ) {
     /** e.g. "359 c/s · 104,233 pts"; "" when there's nothing to show */
     val statsLine: String
         get() = listOfNotNull(
             if (rate >= 0) "${if (rate >= 10) rate.toLong().toString() else String.format(java.util.Locale.US, "%.1f", rate)} c/s" else null,
             if (points >= 0) "${String.format(java.util.Locale.US, "%,d", points)} pts" else null,
+            if (jobs >= 0) "${String.format(java.util.Locale.US, "%,d", jobs)} jobs" else null,
         ).joinToString(" · ")
 
     /** Colors match the website: green running, red not running/not staked, yellow being slashed, gray cooling. */
@@ -46,6 +49,7 @@ object StatusRepo {
                 card, j.getString("state"), j.getString("label"), System.currentTimeMillis(),
                 points = j.optLong("points", -1),
                 rate = if (j.isNull("rateLive")) -1.0 else j.optDouble("rateLive", -1.0),
+                jobs = if (!j.has("jobs") || j.isNull("jobs")) -1 else j.optLong("jobs", -1),
             )
         } catch (e: Exception) {
             val j = get("$SITE/api/cards/$card/status")
@@ -75,6 +79,7 @@ object StatusRepo {
             .putLong("card_${s.card}_at", s.checkedAt)
             .putLong("card_${s.card}_points", s.points)
             .putFloat("card_${s.card}_rate", s.rate.toFloat())
+            .putLong("card_${s.card}_jobs", s.jobs)
             .apply()
     }
 
@@ -86,6 +91,7 @@ object StatusRepo {
         val s = NodeStatus(
             card, p.getString("card_${card}_state", "unknown")!!, p.getString("card_${card}_label", "")!!, at,
             points = p.getLong("card_${card}_points", -1), rate = p.getFloat("card_${card}_rate", -1f).toDouble(),
+            jobs = p.getLong("card_${card}_jobs", -1),
         )
         return if (System.currentTimeMillis() - at > STALE_MS) s.copy(state = "unknown", label = "No signal") else s
     }
