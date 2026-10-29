@@ -48,8 +48,16 @@ object NodeStore {
     // live status of the running node, shown by MainActivity and the notification
     fun setStatus(ctx: Context, s: String) = p(ctx).edit().putString("status", s).putLong("status_at", System.currentTimeMillis()).apply()
     fun status(ctx: Context): String = p(ctx).getString("status", "") ?: ""
-    fun setRunning(ctx: Context, on: Boolean) = p(ctx).edit().putBoolean("running", on).apply()
+    fun setRunning(ctx: Context, on: Boolean) = p(ctx).edit().putBoolean("running", on).putLong("alive_at", if (on) System.currentTimeMillis() else 0).apply()
+    /** the running service touches this every minute; a "running" flag with no touch for 3 min means Android killed it */
+    fun touchAlive(ctx: Context) = p(ctx).edit().putLong("alive_at", System.currentTimeMillis()).apply()
+    fun reallyRunning(ctx: Context) = running(ctx) && System.currentTimeMillis() - p(ctx).getLong("alive_at", 0) < 3 * 60_000
     fun running(ctx: Context) = p(ctx).getBoolean("running", false)
+    /** the user pressed Start (and not Stop): AutoStart brings the node back after battery pauses, kills and reboots */
+    fun wantRunning(ctx: Context) = p(ctx).getBoolean("want_running", false)
+    fun setWantRunning(ctx: Context, on: Boolean) = p(ctx).edit().putBoolean("want_running", on).apply()
+    fun autoRestart(ctx: Context) = p(ctx).getBoolean("auto_restart", true)
+    fun setAutoRestart(ctx: Context, on: Boolean) = p(ctx).edit().putBoolean("auto_restart", on).apply()
     fun batteryOverride(ctx: Context) = p(ctx).getBoolean("battery_override", false)
     fun setBatteryOverride(ctx: Context, on: Boolean) = p(ctx).edit().putBoolean("battery_override", on).apply()
 }

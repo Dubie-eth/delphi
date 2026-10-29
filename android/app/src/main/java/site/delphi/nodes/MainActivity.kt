@@ -18,6 +18,7 @@ import android.widget.Toast
 
 /** The app's own screen: the background phone node (link wallet, start/stop, live status) and the widgets. */
 class MainActivity : Activity() {
+    companion object { const val ACTION_RESTART = "site.delphi.nodes.RESTART" }
     private val ui = Handler(Looper.getMainLooper())
     private val tick = object : Runnable {
         override fun run() { showNode(); ui.postDelayed(this, 2000) }
@@ -47,19 +48,35 @@ class MainActivity : Activity() {
             useCode(findViewById<EditText>(R.id.node_code).text.toString())
         }
         findViewById<Button>(R.id.node_toggle).setOnClickListener {
-            if (NodeStore.running(this)) NodeService.stop(this)
+            if (NodeStore.reallyRunning(this)) NodeService.stop(this)
             else {
                 askNotificationPermission()
+                NodeStore.setWantRunning(this, true)
+                AutoStart.schedule(this)
                 NodeService.start(this)
             }
             ui.postDelayed({ showNode() }, 600)
         }
+        findViewById<android.widget.CheckBox>(R.id.node_autorestart).apply {
+            isChecked = NodeStore.autoRestart(this@MainActivity)
+            setOnCheckedChangeListener { _, on -> NodeStore.setAutoRestart(this@MainActivity, on) }
+        }
         handleLink(intent)
+        handleRestart(intent)
+    }
+
+    /** the "Restart your Delphi node" notification: a user tap, so Android allows the start */
+    private fun handleRestart(i: Intent?) {
+        if (i?.action != ACTION_RESTART) return
+        AutoStart.cancelNote(this)
+        if (NodeStore.approval(this)?.let { it.expires > System.currentTimeMillis() / 1000 } != true) return // relink first
+        if (!NodeStore.reallyRunning(this)) { NodeStore.setWantRunning(this, true); NodeService.start(this) }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleLink(intent)
+        handleRestart(intent)
     }
 
     /** delphinodes://link?c=… from delphi.site/node/link */
@@ -79,6 +96,7 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        AutoStart.check(this) // opening the app also brings a wanted node back
         showCards()
         ui.post(tick)
     }
@@ -90,7 +108,7 @@ class MainActivity : Activity() {
 
     private fun showNode() {
         val a = NodeStore.approval(this)
-        val running = NodeStore.running(this)
+        val running = NodeStore.reallyRunning(this)
         val now = System.currentTimeMillis() / 1000
         val linked = when {
             a == null -> "Not linked yet. Tap \"Link your wallet\", approve on delphi.site, then come back."
