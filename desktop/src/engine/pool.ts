@@ -42,7 +42,12 @@ export class FreivaldsPool {
     this.workers = [];
   }
 
+  /** new challenge (new block): every worker rebuilds its matrices, so the result hash changes. Report the NEW hash
+   *  (onReady fires again); before, only the first hash of the run was ever reported and every later batch carried
+   *  a hash that didn't match its seed, so the attestor refused it as "work not done". */
   restart(seed: number) {
+    this.readyCount = 0;
+    this.resultHash = "";
     for (const w of this.workers) {
       w.postMessage({
         type: "start",

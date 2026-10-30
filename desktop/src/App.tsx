@@ -245,7 +245,8 @@ export default function App() {
       }
       const durationSec = Math.max(1, Math.round((performance.now() - batchStartRef.current) / 1000));
       const ts = Math.floor(Date.now() / 1000);
-      const hash = resultHashRef.current || resultHash || "0";
+      const hash = resultHashRef.current;
+      if (!hash) return;
       await postNodeResults({
         label: "desktop",
         userAgent: `delphi-desktop/${navigator.userAgent}`,
@@ -271,10 +272,11 @@ export default function App() {
         const next = await fetchLatestBatchAnchor();
         batchAnchorRef.current = next;
         const seed = freivaldsSeedFromAnchor(next.blockHash, selectedId, wallet);
+        resultHashRef.current = "";
         poolRef.current?.restart(seed);
       }
     },
-    [wallet, selectedId, resultHash, buildStats]
+    [wallet, selectedId, buildStats]
   );
 
   const finishBatchSubmitLatest = useRef(finishBatchSubmit);
@@ -292,7 +294,8 @@ export default function App() {
     if (batchChecks <= 0) return;
     const durationSec = Math.max(1, Math.round((performance.now() - batchStartRef.current) / 1000));
     const ts = Math.floor(Date.now() / 1000);
-    const hash = resultHash || "0";
+    const hash = resultHashRef.current;
+    if (!hash) return; // the new challenge's result isn't ready yet: this batch goes out with the next tick
     const anchor = batchAnchorRef.current;
     if (!anchor) {
       setStatus("Missing batch anchor — restart the node.");
@@ -308,6 +311,7 @@ export default function App() {
         batchAnchorRef.current = next;
         checksAtBatchRef.current = checksRef.current;
         batchStartRef.current = performance.now();
+        resultHashRef.current = "";
         poolRef.current?.restart(freivaldsSeedFromAnchor(next.blockHash, selectedId, wallet));
         setStatus("Started a fresh batch on a new block (the previous one got too old).");
       } catch (e) {
@@ -334,7 +338,7 @@ export default function App() {
     }
     setStatus("Sign in your browser to submit this batch… (link this computer to skip this)");
     await openSignMessage(message);
-  }, [wallet, selectedId, staked, resultHash, activeApproval]);
+  }, [wallet, selectedId, staked, activeApproval]);
 
   const stopRun = useCallback(() => {
     poolRef.current?.stop();
