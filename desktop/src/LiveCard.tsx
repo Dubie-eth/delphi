@@ -7,7 +7,7 @@ const COLORS: Record<string, string> = {
 };
 const UNKNOWN = "#6b6250";
 
-type Stats = { state: string; label: string; points: number; rateLive: number | null; rateCredited: number };
+type Stats = { state: string; label: string; points: number; rateLive: number | null; rateCredited: number; jobs?: number | null };
 
 /**
  * The card like the home-screen widget: its PFP oracle (face, role swag, 1/1 body, drawn by delphi.site/card/<id>/pfp)
@@ -36,7 +36,7 @@ export default function LiveCard({ id, localRunning, localRate }: { id: number; 
   const color = COLORS[state] ?? UNKNOWN;
   const label = localRunning ? "Running on this computer" : s?.label ?? "Checking…";
   const rate = localRunning ? localRate : s?.rateLive ?? null;
-  const line = [rate != null && rate > 0 ? `${rate >= 10 ? Math.round(rate) : rate.toFixed(1)} c/s` : null, s ? `${s.points.toLocaleString("en-US")} pts` : null]
+  const line = [rate != null && rate > 0 ? `${rate >= 10 ? Math.round(rate) : rate.toFixed(1)} c/s` : null, s ? `${s.points.toLocaleString("en-US")} pts` : null, s?.jobs != null ? `${s.jobs.toLocaleString("en-US")} jobs` : null]
     .filter(Boolean)
     .join(" · ");
   const [imgOk, setImgOk] = useState(true);

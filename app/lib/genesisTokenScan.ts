@@ -72,12 +72,12 @@ export function walletOwnsOrStakes(
 }
 
 /** How many token ids to scan (1..limit inclusive). */
-export async function getGenesisScanLimit(): Promise<number> {
+export async function getGenesisScanLimit(nft: Address = TESTNET.genesisNodeNft): Promise<number> {
   let hint = 0;
   for (const fn of ["totalSupply", "totalMinted"] as const) {
     try {
       const v = await publicClient.readContract({
-        address: TESTNET.genesisNodeNft,
+        address: nft,
         abi: nftScanAbi,
         functionName: fn,
       });
@@ -100,7 +100,7 @@ export type GenesisScanMatrix = {
 };
 
 /** One Multicall3 round-trip: ownerOf(1..limit) + stakerOf(1..limit) via public testnet RPC. */
-export async function fetchGenesisScanMatrix(limit: number): Promise<GenesisScanMatrix> {
+export async function fetchGenesisScanMatrix(limit: number, nft: Address = TESTNET.genesisNodeNft): Promise<GenesisScanMatrix> {
   const contracts: {
     address: Address;
     abi: typeof nftScanAbi | typeof stakingScanAbi;
@@ -109,7 +109,7 @@ export async function fetchGenesisScanMatrix(limit: number): Promise<GenesisScan
   }[] = [];
   for (let id = 1; id <= limit; id++) {
     contracts.push({
-      address: TESTNET.genesisNodeNft,
+      address: nft,
       abi: nftScanAbi,
       functionName: "ownerOf",
       args: [BigInt(id)],
