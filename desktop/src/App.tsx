@@ -27,6 +27,12 @@ import { loadProfilePick, saveProfilePick, type StoredProfilePick } from "@delph
 import LiveCard from "./LiveCard";
 import "./styles.css";
 
+/** heat throttle: ignore the first seconds (cores spinning up), then pause only if checks stay this much slower than the
+ *  warm-up baseline for this long. Desktops throttle themselves; this is a safety net, not a hair trigger. */
+const HEAT_WARMUP_SEC = 20;
+const HEAT_LIMIT = 1.8;
+const HEAT_SUSTAIN_SEC = 120;
+
 export default function App() {
   const [wallet, setWallet] = useState<Address | null>(null);
   const [tokens, setTokens] = useState<WalletBondToken[]>([]);
@@ -42,6 +48,8 @@ export default function App() {
   const [status, setStatus] = useState("");
   const [autostart, setAutostart] = useState(false);
   const [heatThrottle, setHeatThrottle] = useState(false);
+  const heatBaseRef = useRef<number | null>(null); // median check time just after warm-up
+  const heatSinceRef = useRef<number | null>(null); // when checks first got HEAT_LIMIT× slower (null = they aren't)
   const [throttleOverride, setThrottleOverride] = useState(false);
   const [tokensLoading, setTokensLoading] = useState(false);
   const [tokensError, setTokensError] = useState<string | null>(null);
@@ -174,12 +182,7 @@ export default function App() {
 
   const buildStats = useCallback(() => {
     const times = checkTimesRef.current;
-    let heat = 1;
-    if (times.length >= 20) {
-      const early = times.slice(0, 10).reduce((a, b) => a + b, 0) / 10;
-      const late = times.slice(-10).reduce((a, b) => a + b, 0) / 10;
-      heat = early > 0 ? late / early : 1;
-    }
+    const heat = heatSlowdown;
     return {
       tileSize: TILE,
       plantFault: false,
@@ -196,7 +199,7 @@ export default function App() {
       heatSlowdown: Math.round(heat * 100) / 100,
       desktopThrottle: heatThrottle && !throttleOverride,
     };
-  }, [checks, failures, checksPerSec, resultHash, elapsedSec, heatThrottle, throttleOverride]);
+  }, [checks, failures, checksPerSec, resultHash, elapsedSec, heatSlowdown, heatThrottle, throttleOverride]);
 
   useEffect(() => {
     useLinkCodeRef.current = useLinkCode;
@@ -352,10 +355,6 @@ export default function App() {
       return;
     }
     if (!wallet || !selectedId) return;
-    if (heatThrottle && !throttleOverride) {
-      setStatus("Throttled — enable override or wait for heat to settle.");
-      return;
-    }
     let anchor: BatchAnchor;
     try {
       anchor = await fetchLatestBatchAnchor();
@@ -371,6 +370,10 @@ export default function App() {
     checksAtBatchRef.current = 0;
     batchStartRef.current = performance.now();
     checkTimesRef.current = [];
+    heatBaseRef.current = null;
+    heatSinceRef.current = null;
+    setHeatSlowdown(1);
+    setHeatThrottle(false); // a fresh run measures heat again from scratch
     winRef.current = [];
     startRef.current = performance.now();
 
@@ -388,13 +391,19 @@ export default function App() {
         });
         const times = checkTimesRef.current;
         times.push(ms);
-        if (times.length > 40) times.shift();
-        if (times.length >= 20) {
-          const early = times.slice(0, 10).reduce((a, b) => a + b, 0) / 10;
-          const late = times.slice(-10).reduce((a, b) => a + b, 0) / 10;
-          setHeatSlowdown(early > 0 ? late / early : 1);
-        }
+        if (times.length > 60) times.shift();
         const now = performance.now();
+        // Heat = how much slower checks are now than right after warm-up. The first seconds are skipped (every core
+        // spinning up makes checks slower for a moment, which looked like heat and paused the node after 1 s).
+        const sinceStart = startRef.current ? (now - startRef.current) / 1000 : 0;
+        const median = (xs: number[]) => { const a = [...xs].sort((x, y) => x - y); return a[Math.floor(a.length / 2)] ?? 0; };
+        if (sinceStart >= HEAT_WARMUP_SEC && times.length >= 30) {
+          if (heatBaseRef.current == null) heatBaseRef.current = median(times);
+          const base = heatBaseRef.current;
+          const h = base > 0 ? median(times.slice(-30)) / base : 1;
+          setHeatSlowdown(h);
+          if (h > HEAT_LIMIT) { heatSinceRef.current ??= now; } else heatSinceRef.current = null;
+        }
         const win = winRef.current;
         win.push({ t: now, n: 1 });
         const cutoff = now - 2000;
@@ -414,14 +423,16 @@ export default function App() {
     void sendLive(true);
     if (liveRef.current) clearInterval(liveRef.current);
     liveRef.current = setInterval(() => void sendLive(true), 60_000);
-  }, [staked, heatThrottle, throttleOverride, requestBatchSign, wallet, selectedId, sendLive]);
+  }, [staked, requestBatchSign, wallet, selectedId, sendLive]);
 
   useEffect(() => {
-    if (heatSlowdown > 1.35 && running) {
+    if (!running || throttleOverride) return;
+    const since = heatSinceRef.current;
+    if (since != null && performance.now() - since >= HEAT_SUSTAIN_SEC * 1000) {
       setHeatThrottle(true);
       stopRun();
     }
-  }, [heatSlowdown, running, stopRun]);
+  }, [heatSlowdown, running, throttleOverride, stopRun]);
 
   return (
     <div style={{ maxWidth: 520, margin: "0 auto", padding: "1rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -560,7 +571,7 @@ export default function App() {
 
       {heatThrottle && (
         <div className="banner" style={{ borderColor: "rgba(251, 191, 36, 0.4)" }}>
-          <strong>Heat throttle.</strong> Check latency rose — node paused. Plug in / cool down or override below.
+          <strong>Heat throttle.</strong> Checks stayed much slower for 2 minutes, so the node paused to let your computer cool. Press Start to try again, or tick the override below.
         </div>
       )}
 
