@@ -13,18 +13,31 @@ export const TESTNET = {
   intakeV1: "0x14D205d983623696f3371F9B30be103C5d1bfD68",
   startBlock: 136639096,
   multicall3: "0xcA11bde05977b3631167028862bE2a173976CA11",
+  /** testnet Genesis NFT: the testnet market/gallery. Nodes use `nodeCards` (the mainnet mirror once the peg is live). */
   genesisNodeNft: "0xFB2FfD93227CD50C059389B0057EA11cF9da0D29",
+  /** card contract the node stack stakes: MainnetMirror (node #N = mainnet card #N, owned by its mainnet holder) once
+   *  NEXT_PUBLIC_PEG_MIRROR is set, else the testnet NFT */
+  nodeCards: (process.env.NEXT_PUBLIC_PEG_MIRROR || "0xFB2FfD93227CD50C059389B0057EA11cF9da0D29") as `0x${string}`,
   genesisMarket: "0x0a21Ac6E01638b0437e5066984542F8761Bd3200",
-  nodeBondStaking: "0x6A0131D623705adaca5b8b575D5567de785C0cDE",
-  nodePoints: "0x50e9285a08de369faa621Dfe23De3076d9B04A18",
-  rewardPool: "0xFb9c1760DdeaC7f91aD62A5362B84d00fF58657b",
+  nodeBondStaking: (process.env.NEXT_PUBLIC_PEG_STAKING || "0x6A0131D623705adaca5b8b575D5567de785C0cDE") as `0x${string}`,
+  /** NodePointsV3 / RewardPoolV3 once the open network is deployed (env), else v2 */
+  nodePoints: (process.env.NEXT_PUBLIC_OPEN_POINTS || "0x50e9285a08de369faa621Dfe23De3076d9B04A18") as `0x${string}`,
+  rewardPool: (process.env.NEXT_PUBLIC_OPEN_POOL || "0xFb9c1760DdeaC7f91aD62A5362B84d00fF58657b") as `0x${string}`,
+  /** v2 points/pool: lifetime totals keep counting them after the switch to v3 */
+  nodePointsV2: "0x50e9285a08de369faa621Dfe23De3076d9B04A18",
+  /** every points contract cards earned on before the current one: lifetime points and jobs add them all up */
+  pointsHistory: ["0x50e9285a08de369faa621Dfe23De3076d9B04A18", "0xD68c15ce806aF24D19218921ad5d306b97fB6b35"] as `0x${string}`[],
+  rewardPoolV2: "0xFb9c1760DdeaC7f91aD62A5362B84d00fF58657b",
   usagePayment: "0x2A6504A6123741a6EAF9548e22d59f3FD7b0340C",
-  guardianRegistry: "0x474F0a3831A00b2FC5447bE43B7b1bb25C3F6e38",
+  guardianRegistry: (process.env.NEXT_PUBLIC_PEG_GUARDIANS || "0x474F0a3831A00b2FC5447bE43B7b1bb25C3F6e38") as `0x${string}`,
   vaultSafe: "0x012eE6BFd29d5Df16a8a7c0941D4584C6c11d03B",
   /** stories260K model hash used by DelphiTasks on testnet */
   modelHash: "0xac5d7d65ab0c3ae4111fd522846038a82efd931548d9dea5d22da64307b038ca",
   faucetUrl: "https://faucet.testnet.chain.robinhood.com/",
 } as const;
+
+/** true once node ownership follows mainnet (node #N = mainnet card #N) */
+export const PEG_LIVE = !!process.env.NEXT_PUBLIC_PEG_MIRROR;
 
 /** Network checker credits at most this many Freivalds checks per Genesis card per UTC day. */
 export const NODE_CHECKS_PER_CARD_PER_DAY = 23_000;

@@ -1,11 +1,17 @@
 import path from "node:path";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import publicEnv from "./public-env.json";
 
-// @ts-expect-error TAURI_DEV_HOST from tauri
 const host = process.env.TAURI_DEV_HOST;
 
-export default defineConfig(() => ({
+// The shared ../app code reads public addresses from process.env.NEXT_PUBLIC_* (the site's Vercel env). Vite would turn
+// process.env into {}, so the app silently used the built-in fallbacks. Bake the same public values in from
+// desktop/public-env.json (committed: public addresses only, no secrets), overridable from the build environment.
+export default defineConfig(({ mode }) => ({
+  define: {
+    "process.env": JSON.stringify({ ...publicEnv, ...loadEnv(mode, __dirname, "NEXT_PUBLIC_"), ...pickPublic(process.env) }),
+  },
   plugins: [react()],
   resolve: {
     alias: {
@@ -27,3 +33,7 @@ export default defineConfig(() => ({
     watch: { ignored: ["**/src-tauri/**"] },
   },
 }));
+
+function pickPublic(env: Record<string, string | undefined>): Record<string, string> {
+  return Object.fromEntries(Object.entries(env).filter(([k, v]) => k.startsWith("NEXT_PUBLIC_") && v)) as Record<string, string>;
+}

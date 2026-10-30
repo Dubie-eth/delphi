@@ -1,3 +1,4 @@
+import { STATE, chainName, listAgents, openLive } from "./openNetwork";
 import { createPublicClient, http, parseAbi, type Address } from "viem";
 import { genesisChain, parseTokenUriJson, staticFallbackImage } from "./genesisMarket";
 import {
@@ -6,7 +7,7 @@ import {
   walletOwnsOrStakes,
   withGenesisScanTimeout,
 } from "./genesisTokenScan";
-import { TESTNET } from "./testnet";
+import { PEG_LIVE, TESTNET } from "./testnet";
 
 const publicClient = createPublicClient({
   chain: genesisChain,
@@ -84,10 +85,31 @@ export function formatCreditDay(day: number): string {
   });
 }
 
+/** Genesis cards the wallet holds or stakes, plus (open network) agents it operates */
 export async function listWalletBondTokens(wallet: Address): Promise<WalletBondToken[]> {
+  const [cards, agents] = await Promise.all([listWalletGenesisBondTokens(wallet), listWalletAgents(wallet).catch(() => [])]);
+  return [...cards, ...agents];
+}
+
+async function listWalletAgents(wallet: Address): Promise<WalletBondToken[]> {
+  if (!openLive) return [];
+  const mine = (await listAgents()).filter((a) => a.operator.toLowerCase() === wallet.toLowerCase() && a.role === 1 && a.state !== 0);
+  return mine.map((a) => ({
+    tokenId: a.id,
+    owned: false,
+    stakedByWallet: true,
+    isActive: a.state === 1,
+    name: `Agent ${a.id} (${chainName(a.chainId)} #${a.agentId})`,
+    image: "/delphi-logo.png",
+    tier: "Open network node",
+    status: STATE[a.state as keyof typeof STATE] ?? "",
+  }));
+}
+
+async function listWalletGenesisBondTokens(wallet: Address): Promise<WalletBondToken[]> {
   return withGenesisScanTimeout(async () => {
-    const limit = await getGenesisScanLimit();
-    const matrix = await fetchGenesisScanMatrix(limit);
+    const limit = await getGenesisScanLimit(TESTNET.nodeCards);
+    const matrix = await fetchGenesisScanMatrix(limit, TESTNET.nodeCards);
     const staking = TESTNET.nodeBondStaking;
     const matched: { id: number; owned: boolean; stakedByWallet: boolean }[] = [];
 
@@ -107,7 +129,7 @@ export async function listWalletBondTokens(wallet: Address): Promise<WalletBondT
         args: [BigInt(id)],
       },
       {
-        address: TESTNET.genesisNodeNft,
+        address: TESTNET.nodeCards,
         abi: genesisNftBondAbi,
         functionName: "tokenURI" as const,
         args: [BigInt(id)],
@@ -134,7 +156,8 @@ export async function listWalletBondTokens(wallet: Address): Promise<WalletBondT
         stakedByWallet,
         isActive: active,
         name: meta?.name ?? `Genesis Node #${id}`,
-        image: meta?.image ?? staticFallbackImage(id) ?? "/genesis/live-1.png",
+        // with the peg, node #N is mainnet card #N: show that card's PFP (the mirror has no tokenURI)
+        image: meta?.image ?? (PEG_LIVE ? `/card/${id}/pfp` : staticFallbackImage(id) ?? "/genesis/live-1.png"),
         tier: meta?.tier ?? "—",
         status: meta?.status ?? "—",
       });
@@ -226,13 +249,13 @@ export async function isNftApprovedForStaking(wallet: Address, tokenId: number):
   const staking = TESTNET.nodeBondStaking;
   const [approvedForAll, tokenOperator] = await Promise.all([
     publicClient.readContract({
-      address: TESTNET.genesisNodeNft,
+      address: TESTNET.nodeCards,
       abi: genesisNftBondAbi,
       functionName: "isApprovedForAll",
       args: [wallet, staking],
     }),
     publicClient.readContract({
-      address: TESTNET.genesisNodeNft,
+      address: TESTNET.nodeCards,
       abi: genesisNftBondAbi,
       functionName: "getApproved",
       args: [BigInt(tokenId)],
