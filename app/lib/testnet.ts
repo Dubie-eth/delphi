@@ -26,7 +26,7 @@ export const TESTNET = {
   /** v2 points/pool: lifetime totals keep counting them after the switch to v3 */
   nodePointsV2: "0x50e9285a08de369faa621Dfe23De3076d9B04A18",
   /** every points contract cards earned on before the current one: lifetime points and jobs add them all up */
-  pointsHistory: ["0x50e9285a08de369faa621Dfe23De3076d9B04A18", "0xD68c15ce806aF24D19218921ad5d306b97fB6b35"] as `0x${string}`[],
+  pointsHistory: ["0x50e9285a08de369faa621Dfe23De3076d9B04A18", "0xD68c15ce806aF24D19218921ad5d306b97fB6b35", "0x1FBd1B8cA95571F02208EE59D2a370A61f662f1b"] as `0x${string}`[],
   rewardPoolV2: "0xFb9c1760DdeaC7f91aD62A5362B84d00fF58657b",
   usagePayment: "0x2A6504A6123741a6EAF9548e22d59f3FD7b0340C",
   guardianRegistry: (process.env.NEXT_PUBLIC_PEG_GUARDIANS || "0x474F0a3831A00b2FC5447bE43B7b1bb25C3F6e38") as `0x${string}`,

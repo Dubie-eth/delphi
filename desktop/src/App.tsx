@@ -25,6 +25,7 @@ import type { Address } from "viem";
 import ProfilePicturePicker from "@delphi/components/ProfilePicturePicker";
 import { loadProfilePick, saveProfilePick, type StoredProfilePick } from "@delphi/lib/nodeProfileStorage";
 import LiveCard from "./LiveCard";
+import ValidatorPanel from "./ValidatorPanel";
 import "./styles.css";
 
 /** heat throttle: ignore the first seconds (cores spinning up), then pause only if checks stay this much slower than the
@@ -617,6 +618,8 @@ export default function App() {
       ) : null}
 
       {status && <p className="muted">{status}</p>}
+
+      <ValidatorPanel />
     </div>
   );
 }
