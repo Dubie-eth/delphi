@@ -11,6 +11,8 @@ const a = (v: string | undefined) => (v && /^0x[0-9a-fA-F]{40}$/.test(v) ? (v as
 export const OPEN = {
   bond: a(process.env.NEXT_PUBLIC_OPEN_AGENT_BOND),
   validators: a(process.env.NEXT_PUBLIC_OPEN_VALIDATORS),
+  /** GenesisValidatorBond: Genesis holders validate with one staked card + a token bond */
+  genesisValidators: a(process.env.NEXT_PUBLIC_GENESIS_VALIDATOR_BOND),
   token: a(process.env.NEXT_PUBLIC_OPEN_TOKEN),
   idBase: 1_000_000,
   nodeBond: 10_000,
