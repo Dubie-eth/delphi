@@ -92,7 +92,7 @@ export function parseTokenUriJson(uri: string): TokenMeta | null {
   const comma = uri.indexOf(",");
   if (comma === -1) return null;
   try {
-    const json = JSON.parse(atob(uri.slice(comma + 1)));
+    const json = JSON.parse(base64Utf8(uri.slice(comma + 1)));
     const attrs: { trait_type?: string; value?: string | number }[] = json.attributes ?? [];
     const pick = (t: string) => attrs.find((a) => a.trait_type === t)?.value;
     return {
@@ -120,4 +120,9 @@ export async function resolveRendererAddress(
     return TESTNET.genesisNodeNft;
   }
   return r;
+}
+
+/** base64 -> text as UTF-8 (atob alone yields Latin-1, which garbles "…" and other non-ASCII in on-chain metadata) */
+export function base64Utf8(b64: string): string {
+  return new TextDecoder().decode(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)));
 }

@@ -28,11 +28,16 @@ export const TESTNET = {
   /** every points contract cards earned on before the current one: lifetime points and jobs add them all up */
   pointsHistory: ["0x50e9285a08de369faa621Dfe23De3076d9B04A18", "0xD68c15ce806aF24D19218921ad5d306b97fB6b35", "0x1FBd1B8cA95571F02208EE59D2a370A61f662f1b"] as `0x${string}`[],
   rewardPoolV2: "0xFb9c1760DdeaC7f91aD62A5362B84d00fF58657b",
-  usagePayment: "0x2A6504A6123741a6EAF9548e22d59f3FD7b0340C",
+  /** UsagePayment on the faucet-minted mDLPH (vault = testnet deployer). Old: 0x2A6504A6123741a6EAF9548e22d59f3FD7b0340C */
+  usagePayment: "0x3Ed6D72A80667dbc7ddc7cAcf2Ff98deF18DB9d2",
+  /** RewardPool that the new UsagePayment funds (node/validator pages still use rewardPool above) */
+  usageRewardPool: "0x651180476Dda6d1D6E0DFB3f447c8B5eD24819B8",
+  /** DelphiFaucet: drip() = 100 mDLPH, max 100 per address per rolling 24h */
+  faucet: "0xFF5170Bb993d7665075984f071E5Ded89FA58813",
   guardianRegistry: (process.env.NEXT_PUBLIC_PEG_GUARDIANS || "0x474F0a3831A00b2FC5447bE43B7b1bb25C3F6e38") as `0x${string}`,
   vaultSafe: "0x012eE6BFd29d5Df16a8a7c0941D4584C6c11d03B",
   /** stories260K model hash used by DelphiTasks on testnet */
-  modelHash: "0xac5d7d65ab0c3ae4111fd522846038a82efd931548d9dea5d22da64307b038ca",
+  modelHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
   faucetUrl: "https://faucet.testnet.chain.robinhood.com/",
 } as const;
 

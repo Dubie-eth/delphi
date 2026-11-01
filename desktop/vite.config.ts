@@ -17,6 +17,10 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@delphi": path.resolve(__dirname, "../app"),
       viem: path.resolve(__dirname, "node_modules/viem"),
+      // shared ../app/lib/inference code: resolve its crypto libraries from this app (same audited versions viem uses)
+      "@noble/curves": path.resolve(__dirname, "node_modules/@noble/curves"),
+      "@noble/hashes": path.resolve(__dirname, "node_modules/@noble/hashes"),
+      "@noble/ciphers": path.resolve(__dirname, "node_modules/@noble/ciphers"),
     },
     // shared ../app files resolve react from this app's node_modules (the public repo has no site node_modules)
     dedupe: ["react", "react-dom"],

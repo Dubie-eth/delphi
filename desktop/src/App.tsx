@@ -26,6 +26,7 @@ import ProfilePicturePicker from "@delphi/components/ProfilePicturePicker";
 import { loadProfilePick, saveProfilePick, type StoredProfilePick } from "@delphi/lib/nodeProfileStorage";
 import LiveCard from "./LiveCard";
 import ValidatorPanel from "./ValidatorPanel";
+import LocalModels from "./infer/LocalModels";
 import "./styles.css";
 
 /** heat throttle: ignore the first seconds (cores spinning up), then pause only if checks stay this much slower than the
@@ -618,6 +619,8 @@ export default function App() {
       ) : null}
 
       {status && <p className="muted">{status}</p>}
+
+      <LocalModels approval={approval} />
 
       <ValidatorPanel />
     </div>
