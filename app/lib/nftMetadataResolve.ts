@@ -1,4 +1,4 @@
-import { parseTokenUriJson } from "./genesisMarket";
+import { base64Utf8, parseTokenUriJson } from "./genesisMarket";
 import { httpUrlsForIpfsUri, httpUrlsForIpfsPath, ipfsPathFromUri } from "./ipfsGateways";
 
 export type NftTileMeta = {
@@ -24,7 +24,7 @@ function parseJsonUri(uri: string): NftTileMeta | null {
     const comma = uri.indexOf(",");
     if (comma === -1) return null;
     try {
-      const json = JSON.parse(atob(uri.slice(comma + 1))) as { name?: string; image?: string };
+      const json = JSON.parse(base64Utf8(uri.slice(comma + 1))) as { name?: string; image?: string };
       if (typeof json.image === "string") {
         return {
           name: typeof json.name === "string" ? json.name : "NFT",

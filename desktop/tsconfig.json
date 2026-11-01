@@ -26,7 +26,10 @@
       "react/*": ["node_modules/@types/react/*"],
       "@upstash/redis": ["src/shims/upstash-redis.d.ts"],
       "viem": ["node_modules/viem"],
-      "viem/*": ["node_modules/viem/*"]
+      "viem/*": ["node_modules/viem/*"],
+      "@noble/curves/*": ["node_modules/@noble/curves/*"],
+      "@noble/hashes/*": ["node_modules/@noble/hashes/*"],
+      "@noble/ciphers/*": ["node_modules/@noble/ciphers/*"]
     }
   },
   "include": [
